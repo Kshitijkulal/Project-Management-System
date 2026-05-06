@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { isTokenValid } from "@/lib/api";
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
+    if (!isTokenValid()) {
       router.push("/login");
     } else {
       setChecked(true);

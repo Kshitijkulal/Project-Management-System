@@ -7,6 +7,26 @@ function getToken() {
   return null;
 }
 
+// Decodes the JWT exp claim locally — no network call needed.
+// Clears the token if it's expired or malformed.
+export function isTokenValid() {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    if (payload.exp * 1000 < Date.now()) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      return false;
+    }
+    return true;
+  } catch {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    return false;
+  }
+}
+
 async function request(endpoint, options = {}) {
   const token = getToken();
 
@@ -37,6 +57,13 @@ async function request(endpoint, options = {}) {
     data = await res.json();
   } catch (err) {
     throw new Error("Server returned an invalid response.");
+  }
+
+  if (res.status === 401) {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+    return;
   }
 
   if (!res.ok || !data.success) {

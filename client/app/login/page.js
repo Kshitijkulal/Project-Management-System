@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { post } from "@/lib/api";
+import { post, isTokenValid } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,10 +12,15 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (localStorage.getItem("token")) {
+      router.replace("/dashboard");
+    }
+  }, [router]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
-
     try {
       const res = await post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
